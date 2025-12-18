@@ -45,12 +45,30 @@ class ImageViewer(Node):
             if area < 2000:
                 continue
 
+            H, W = frame.shape[:2]
+            if area > 0.5 * (W * H):   # 화면의 50% 넘는 거(테이블/보드) 무시
+                continue
+
+
             peri = cv2.arcLength(c, True)
             approx = cv2.approxPolyDP(c, 0.02 * peri, True)
 
-            if len(approx) == 4 and area > best_area:
-                best = approx.reshape(-1,2)
-                best_area = area
+            if len(approx) == 4:
+                # minAreaRect 기반 "사각형에 얼마나 꽉 차는가" (extent)
+                rect = cv2.minAreaRect(c)
+                rect_area = rect[1][0] * rect[1][1]
+                if rect_area <= 1e-6:
+                    continue
+                extent = area / rect_area  # 1에 가까울수록 사각형에 가까움
+
+                # 너무 얇거나(케이블/빔), 너무 삼각형스러운(큰 외곽) 것 배제
+                if extent < 0.65:
+                    continue
+
+                if area > best_area:
+                    best = approx.reshape(-1,2)
+                    best_area = area
+
 
         if best is not None:
             corners = order_corners(best)
