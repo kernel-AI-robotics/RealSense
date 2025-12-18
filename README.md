@@ -1,3 +1,5 @@
+sudo apt install ros-humble-diagnostic-*
+
 git clone --recurse-submodules https://github.com/kernel-AI-robotics/RealSense.git
 
 cd RealSense
